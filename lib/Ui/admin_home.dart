@@ -2,9 +2,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:quizapp/Ui/create_quiz.dart';
+import 'package:quizapp/Ui/profile_page.dart';
 import 'package:quizapp/models/quiz.dart';
 import 'package:quizapp/services/auth_services/auth.dart';
-import 'package:quizapp/shared_widgets/button.dart';
 import 'package:quizapp/shared_widgets/quiz_card.dart';
 import 'package:quizapp/utils/constants.dart';
 
@@ -19,11 +19,23 @@ class AdminHomePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         title: Row(
           children: [
             Text('Quiz App'),
             Spacer(),
-            Icon(Icons.person),
+            GestureDetector(
+              onTap: () {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ProfilePage(userId: FirebaseAuth.instance.currentUser!.uid),
+      ),
+    );
+  },
+
+              child: Icon(Icons.person),
+            ),
             GestureDetector(
               onTap: () {
                 logout();
@@ -42,7 +54,6 @@ class AdminHomePage extends StatelessWidget {
           if (!snapshot.hasData) {
             return Center(child: CircularProgressIndicator());
           }
-
           if (snapshot.data!.docs.isEmpty) {
             return Container(
                 child: Center(
@@ -58,7 +69,8 @@ class AdminHomePage extends StatelessWidget {
             itemBuilder: (context, index) {
               DocumentSnapshot quizDoc = snapshot.data!.docs[index];
               Quiz quiz = Quiz.fromMap(quizDoc.data() as Map<String, dynamic>);
-              return QuizCard(quiz: quiz);
+               String quizId = quizDoc.id;
+              return QuizCard(quiz: quiz,quizId: quizId,);
             },
           );
         },
@@ -71,9 +83,9 @@ class AdminHomePage extends StatelessWidget {
           );
         },
         child: Icon(Icons.add),
-        backgroundColor: Colors.blue, // You can customize the color
+        backgroundColor: Colors.blue, 
       ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat, // Bottom right corner
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat, 
     );
   }
 }

@@ -39,6 +39,7 @@ class SignInState extends State<SignIn> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         centerTitle: true,
+        automaticallyImplyLeading: false,
       ),
       body: SingleChildScrollView(
         child: Form(
@@ -47,9 +48,9 @@ class SignInState extends State<SignIn> {
             margin: EdgeInsets.symmetric(horizontal: 20),
             child: Column(
               crossAxisAlignment:
-                  CrossAxisAlignment.start, // Aligns widgets to the start
+                  CrossAxisAlignment.start, 
               children: [
-                SizedBox(height: 50), // Adding space from the top
+                SizedBox(height: 50), 
                 TextFormField(
                   validator: (val) {
                     return val!.isEmpty ? "Enter email" : null;

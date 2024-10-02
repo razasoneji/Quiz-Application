@@ -54,8 +54,14 @@ class AddQuestionState extends State<AddQuestion>{
   }
     @override
     Widget build(BuildContext context) {
-    return Scaffold(
+       // ignore: deprecated_member_use
+       return WillPopScope(
+    onWillPop: () async {
+      return false; 
+    },
+    child: Scaffold(
         appBar: AppBar(
+          automaticallyImplyLeading: false,
         title: appBar(context),
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -126,6 +132,6 @@ class AddQuestionState extends State<AddQuestion>{
           ),
         ),
       ),
-    );
+    ));
   }
 }

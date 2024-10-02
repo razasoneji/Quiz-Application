@@ -14,21 +14,20 @@ class AuthGate extends StatelessWidget {
       return SignIn();
     }
 
-    // Retrieve the current user's email
     final email = user.email;
     if (email == null) {
       return SignIn();
     }
 
-    // Find user by email from Firestore
+
     final userModel = await findUserByEmail(email);
-    // Redirect based on user role
+
     if (userModel.role == 'UserRole.admin') {
       print("admin");
-      return AdminHomePage(); // Admin home page
+      return AdminHomePage(); 
     } else {
       print("participant");
-      return ParticipantHomePage(); // Participant home page
+      return ParticipantHomePage(); 
     }
   }
 
@@ -36,8 +35,6 @@ class AuthGate extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       body: StreamBuilder<User?>(
-
-        
         stream: FirebaseAuth.instance.authStateChanges(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
@@ -45,14 +42,12 @@ class AuthGate extends StatelessWidget {
           }
 
           if (snapshot.hasData) {
-            // User is authenticated
             return FutureBuilder<Widget>(
               future: _getHomePage(snapshot.data),
               builder: (context, futureSnapshot) {
                 if (futureSnapshot.connectionState == ConnectionState.waiting) {
                   return Center(child: CircularProgressIndicator());
                 }
-
                 if (futureSnapshot.hasData) {
                   return futureSnapshot.data!;
                 }
@@ -61,8 +56,6 @@ class AuthGate extends StatelessWidget {
               },
             );
           }
-
-          
           return SignIn();
         },
       ),
