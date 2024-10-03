@@ -1,23 +1,38 @@
 import 'package:flutter/material.dart';
 import 'package:quizapp/models/quiz.dart';
 import 'package:quizapp/utils/constants.dart';
+import 'package:quizapp/Ui/result_page.dart'; // Import ResultsPage
+import 'package:quizapp/shared_widgets/participant_selection_dialog.dart'; // Import your participant selection dialog
 
 class QuizCard extends StatelessWidget {
   final Quiz quiz;
+  final String quizId;
 
+  QuizCard({required this.quiz, required this.quizId}); 
 
-  QuizCard({required this.quiz,});
+  void selectParticipants(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      builder: (context) {
+        return ParticipantSelectionDialog(quizId: quizId,quizName: quiz.Name,);
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () => print("quiz card is clicked"),
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => ResultsPage(quizId: quizId)), // Pass the quiz ID here
+        );
+      },
       child: Card(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15.0)),
         elevation: 5,
         child: Stack(
           children: [
-            // Background Image
             Container(
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(15.0),
@@ -51,6 +66,18 @@ class QuizCard extends StatelessWidget {
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
                   ),
+                ),
+              ),
+            ),
+            // Icon to select participants
+            Positioned(
+              top: 10,
+              right: 10,
+              child: GestureDetector(
+                onTap: () => selectParticipants(context),
+                child: CircleAvatar(
+                  backgroundColor: Colors.white.withOpacity(0.7),
+                  child: Icon(Icons.people, color: Colors.black),
                 ),
               ),
             ),

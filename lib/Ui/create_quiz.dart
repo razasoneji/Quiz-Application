@@ -37,8 +37,11 @@ class CreateQuizState extends State<CreateQuiz> {
   }
   @override
   Widget build(BuildContext context) {
+       // ignore: deprecated_member_use
+   
     return Scaffold(
         appBar: AppBar(
+          automaticallyImplyLeading: false,
           title: appBar(context),
           backgroundColor: Colors.transparent,
           elevation: 0.0,

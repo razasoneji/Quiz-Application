@@ -2,17 +2,24 @@ class User {
   String name;
   String email;
   String role;
+  String imageUrl;
+  
 
    User({ 
     required this.name,
     required this.email,
     required this.role,
+    required this.imageUrl
+
+    
   });
   factory User.fromMap(Map<String, dynamic> map) {
     return User(
       name: map['name'],
       email: map['email'], 
       role: map['role'],
+      imageUrl: map['imageUrl'],
+   
     );
   }
   String getName()
@@ -41,7 +48,9 @@ class User {
     return  <String, dynamic>{
         "name": name,
         "email":email,
-        "role":role
+        "role":role,
+        "imageUrl" : imageUrl,
+    
     };
   }
 

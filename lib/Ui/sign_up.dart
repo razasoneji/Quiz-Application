@@ -1,7 +1,9 @@
-import "package:flutter/material.dart";
-import "package:quizapp/services/auth_services/auth_gate.dart";
-// import "package:quizapp/Ui/HomePage.dart";
+import "dart:io";
 
+import "package:firebase_storage/firebase_storage.dart";
+import "package:flutter/material.dart";
+import "package:image_picker/image_picker.dart";
+import "package:quizapp/services/auth_services/auth_gate.dart";
 import "package:quizapp/shared_widgets/appbar.dart";
 import "package:quizapp/services/auth_services/auth.dart";
 import "package:quizapp/Ui/sign_in.dart";
@@ -17,36 +19,54 @@ class SignUp extends StatefulWidget {
 
 class SignUpState extends State<SignUp> {
   final _formKey = GlobalKey<FormState>();
-  String email="", password="", confirmPassword="", name="";
+  String email = "", password = "", confirmPassword = "", name = "";
   UserRole _selectedRole = UserRole.admin;
- bool validate_form()
- {
-   if(_formKey.currentState!.validate())
-   {
-     return true;
-   }
-   return false;
- }
+  XFile? _image; // Variable to hold the selected image
+
+  bool validate_form() {
+    return _formKey.currentState!.validate();
+  }
+
+  Future<void> _pickImage() async {
+    final ImagePicker _picker = ImagePicker();
+    // Allow the user to pick an image from the gallery
+    _image = await _picker.pickImage(source: ImageSource.gallery);
+    setState(() {}); // Update the UI to show the selected image
+  }
+
+ void signUpHandler() async {
+  if (password != confirmPassword) {
+    errorDialogBox(context, "Password and Confirm Password should be the same");
+    return;
+  }
   
-  void signUpHandler() async {
-        if(password != confirmPassword) 
-        {
-          errorDialogBox(context, "Password and Confirm Password should be the same");
-          return;
-        }
-        if(password == confirmPassword && validate_form()) {
-        final AuthService authService = AuthService();
-        try {
-          await authService.signUpWithEmailPassword(
-              email, password, name, _selectedRole.toString());
-          redirectDialogBox(context,
-              "Sign up is successfull click on ok to continue", AuthGate());
-        } catch (e) {
-          errorDialogBox(context, e.toString());
-        }
+  if (password == confirmPassword && validate_form()) {
+    final AuthService authService = AuthService();
+    try {
+      // Step 1: Upload the image to Firebase Storage
+      if (_image != null) {
+        String fileName = _image!.name; 
+        final storageRef = FirebaseStorage.instance.ref().child("profile_images/$fileName");
+        await storageRef.putFile(File(_image!.path)); 
+
+        print("getting the imageurl.......................................");
+        String imageUrl = await storageRef.getDownloadURL();
+        
+      
+        await authService.signUpWithEmailPassword(
+            email, password, name, _selectedRole.toString(), imageUrl); 
+        print("signing up.....................................................");
+        redirectDialogBox(context,
+            "Sign up is successful, click on OK to continue", AuthGate());
+      } else {
+        errorDialogBox(context, "Please select a profile picture.");
       }
-       return ;
+    } catch (e) {
+      errorDialogBox(context, e.toString());
     }
+  }
+}
+
 
   @override
   Widget build(BuildContext context) {
@@ -58,17 +78,29 @@ class SignUpState extends State<SignUp> {
         centerTitle: true,
       ),
       body: SingleChildScrollView(
-        // Wrap the entire content in SingleChildScrollView
         child: Form(
           autovalidateMode: AutovalidateMode.onUserInteraction,
           key: _formKey,
           child: Container(
             margin: EdgeInsets.symmetric(horizontal: 20),
             child: Column(
-              crossAxisAlignment:
-                  CrossAxisAlignment.start, // Align the children to the start
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                SizedBox(height: 50), // Adjust spacing from the top
+                SizedBox(height: 50),
+                
+                // Image Picker
+                GestureDetector(
+                  onTap: _pickImage,
+                  child: CircleAvatar(
+                    radius: 50,
+                    backgroundColor: Colors.grey[300],
+                    backgroundImage: _image != null ? FileImage(File(_image!.path)) : null,
+                    child: _image == null
+                        ? Icon(Icons.camera_alt, size: 50, color: Colors.grey)
+                        : null,
+                  ),
+                ),
+                SizedBox(height: 20),
 
                 TextFormField(
                   validator: (val) {
@@ -81,7 +113,7 @@ class SignUpState extends State<SignUp> {
                   validator: (val) {
                     return val!.isEmpty ? "Enter Name" : null;
                   },
-                  decoration: const InputDecoration(hintText: "name"),
+                  decoration: const InputDecoration(hintText: "Name"),
                   onChanged: (val) => name = val,
                 ),
                 SizedBox(height: 7),
@@ -91,17 +123,15 @@ class SignUpState extends State<SignUp> {
                   },
                   obscureText: true,
                   decoration: const InputDecoration(hintText: "Password"),
-                  onChanged: (val) =>
-                      password = val, // Change to update the correct variable
+                  onChanged: (val) => password = val,
                 ),
                 SizedBox(height: 7),
                 TextFormField(
                   validator: (val) {
-                    return val!.isEmpty ? "confirm your password" : null;
+                    return val!.isEmpty ? "Confirm your password" : null;
                   },
                   obscureText: true,
-                  decoration:
-                      const InputDecoration(hintText: "Confirm Password"),
+                  decoration: const InputDecoration(hintText: "Confirm Password"),
                   onChanged: (val) => confirmPassword = val,
                 ),
                 SizedBox(height: 7),
@@ -134,10 +164,11 @@ class SignUpState extends State<SignUp> {
                 ),
                 SizedBox(height: 25),
                 GestureDetector(
-                    onTap: () {
-                      signUpHandler();
-                    },
-                    child: Button(context, "Sign Up")),
+                  onTap: () {
+                    signUpHandler();
+                  },
+                  child: Button(context, "Sign Up"),
+                ),
                 SizedBox(height: 15),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -159,7 +190,7 @@ class SignUpState extends State<SignUp> {
                     ),
                   ],
                 ),
-                SizedBox(height: 60), // Adjust as needed
+                SizedBox(height: 60),
               ],
             ),
           ),
